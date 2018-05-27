@@ -6,7 +6,7 @@ const Marker = () => <Icon name="marker" size="big" color="red" />;
 
 const EventDetailedMap = ({ lat, lng }) => {
   const center = [lat, lng];
-  const zoom = 14;
+  const zoom = 10;
   return (
     <Segment attached="bottom" style={{ padding: 0 }}>
       <div style={{ height: '300px', width: '100%' }}>
