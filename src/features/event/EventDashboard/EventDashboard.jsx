@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Grid, Loader } from 'semantic-ui-react';
 import { connect } from 'react-redux';
 import { firestoreConnect } from 'react-redux-firebase';
-import { getEventsForDashbaord } from '../eventActions';
+import { getEventsForDashboard } from '../eventActions';
 import EventList from '../EventList/EventList';
 import LoadingComponent from '../../../app/layout/LoadingComponent';
 import EventActivity from '../EventActivity/EventActivity';
@@ -13,7 +13,7 @@ const mapState = state => ({
 });
 
 const actions = {
-  getEventsForDashbaord
+  getEventsForDashboard
 };
 
 class EventDashboard extends Component {
@@ -21,42 +21,40 @@ class EventDashboard extends Component {
     moreEvents: false,
     loadingInitial: true,
     loadedEvents: []
-  }
+  };
 
   async componentDidMount() {
-    let next = await this.props.getEventsForDashbaord();
+    let next = await this.props.getEventsForDashboard();
     console.log(next);
 
     if (next && next.docs && next.docs.length > 1) {
       this.setState({
         moreEvents: true,
         loadingInitial: false
-      })
+      });
     }
   }
-
 
   componentWillReceiveProps(nextProps) {
     if (this.props.events !== nextProps.events) {
       this.setState({
         loadedEvents: [...this.state.loadedEvents, ...nextProps.events]
-      })
+      });
     }
   }
-
 
   getNextEvents = async () => {
     const { events } = this.props;
-    let lastEvents = events && events[events.length - 1];
-    console.log(lastEvents);
-    let next = await this.props.getEventsForDashbaord(lastEvents);
+    let lastEvent = events && events[events.length - 1];
+    console.log(lastEvent);
+    let next = await this.props.getEventsForDashboard(lastEvent);
     console.log(next);
-    if (next && next.docs && next.docs.length > 1) {
+    if (next && next.docs && next.docs.length <= 1) {
       this.setState({
         moreEvents: false
-      })
+      });
     }
-  }
+  };
 
   render() {
     const { loading } = this.props;
@@ -66,8 +64,12 @@ class EventDashboard extends Component {
     return (
       <Grid>
         <Grid.Column width={10}>
-          <EventList loading={loading} moreEvents={moreEvents} events={loadedEvents} getNextEvents={this.getNextEvents} />
-
+          <EventList
+            loading={loading}
+            moreEvents={moreEvents}
+            events={loadedEvents}
+            getNextEvents={this.getNextEvents}
+          />
         </Grid.Column>
         <Grid.Column width={6}>
           <EventActivity />
@@ -80,6 +82,4 @@ class EventDashboard extends Component {
   }
 }
 
-export default connect(mapState, actions)(
-  firestoreConnect([{ collection: 'events' }])(EventDashboard)
-);
+export default connect(mapState, actions)(firestoreConnect([{ collection: 'events' }])(EventDashboard));
