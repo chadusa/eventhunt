@@ -2,14 +2,21 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { firestoreConnect } from 'react-redux-firebase';
 import { compose } from 'redux';
-import { Image, Segment, Header, Divider, Grid, Button, Card, Icon } from 'semantic-ui-react';
+import {
+  Image,
+  Segment,
+  Header,
+  Divider,
+  Grid,
+  Button,
+  Card,
+  Icon
+} from 'semantic-ui-react';
+import { toastr } from 'react-redux-toastr';
 import Dropzone from 'react-dropzone';
 import Cropper from 'react-cropper';
-import { toastr } from 'react-redux-toastr';
 import 'cropperjs/dist/cropper.css';
 import { uploadProfileImage, deletePhoto, setMainPhoto } from '../userActions';
-
-
 
 const query = ({ auth }) => {
   return [
@@ -26,7 +33,7 @@ const actions = {
   uploadProfileImage,
   deletePhoto,
   setMainPhoto
-}
+};
 
 const mapState = state => ({
   auth: state.firebase.auth,
@@ -35,14 +42,20 @@ const mapState = state => ({
   loading: state.async.loading
 });
 
-
 class PhotosPage extends Component {
   state = {
     files: [],
     fileName: '',
     cropResult: null,
     image: {}
-  }
+  };
+
+  cancelCrop = () => {
+    this.setState({
+      files: [],
+      image: {}
+    });
+  };
 
   uploadImage = async () => {
     try {
@@ -52,7 +65,6 @@ class PhotosPage extends Component {
       );
       this.cancelCrop();
       toastr.success('Success', 'Photo has been uploaded');
-
     } catch (error) {
       toastr.error('Oops', error.message);
     }
@@ -62,29 +74,23 @@ class PhotosPage extends Component {
     try {
       this.props.deletePhoto(photo);
     } catch (error) {
-      toastr.error('Ooops', error.message)
+      toastr.error('Oops', error.message)
     }
   }
 
   handleSetMainPhoto = (photo) => async () => {
     try {
-      this.props.setMainPhoto(photo)
+      await this.props.setMainPhoto(photo)
     } catch (error) {
       toastr.error('Oops', error.message)
     }
   }
 
-  cancelCrop = () => {
-    this.setState({
-      files: [],
-      image: {}
-    });
-  };
-
   cropImage = () => {
     if (typeof this.refs.cropper.getCroppedCanvas() === 'undefined') {
       return;
     }
+
     this.refs.cropper.getCroppedCanvas().toBlob(blob => {
       let imageUrl = URL.createObjectURL(blob);
       this.setState({
@@ -92,14 +98,15 @@ class PhotosPage extends Component {
         image: blob
       });
     }, 'image/jpeg');
-  }
+  };
 
-  onDrop = (files) => {
+  onDrop = files => {
     this.setState({
       files,
       fileName: files[0].name
-    })
-  }
+    });
+  };
+
   render() {
     const { photos, profile, loading } = this.props;
     let filteredPhotos;
@@ -110,21 +117,21 @@ class PhotosPage extends Component {
     }
     return (
       <Segment>
-        <Header dividing size='large' content='Your Photos' />
+        <Header dividing size="large" content="Your Photos" />
         <Grid>
           <Grid.Row />
           <Grid.Column width={4}>
-            <Header color='teal' sub content='Step 1 - Add Photo' />
+            <Header color="teal" sub content="Step 1 - Add Photo" />
             <Dropzone onDrop={this.onDrop} multiple={false}>
               <div style={{ paddingTop: '30px', textAlign: 'center' }}>
-                <Icon name='upload' size='huge' />
-                <Header content='Drop image here or Click to add' />
+                <Icon name="upload" size="huge" />
+                <Header content="Drop image here or click to upload" />
               </div>
             </Dropzone>
           </Grid.Column>
           <Grid.Column width={1} />
           <Grid.Column width={4}>
-            <Header sub color='teal' content='Step 2 - Resize image' />
+            <Header sub color="teal" content="Step 2 - Resize image" />
             {this.state.files[0] && (
               <Cropper
                 style={{ height: 200, width: '100%' }}
@@ -168,29 +175,28 @@ class PhotosPage extends Component {
               </div>
             )}
           </Grid.Column>
-
         </Grid>
 
         <Divider />
-        <Header sub color='teal' content='All Photos' />
+        <Header sub color="teal" content="All Photos" />
 
         <Card.Group itemsPerRow={5}>
           <Card>
             <Image src={profile.photoURL || '/assets/user.png'} />
             <Button positive>Main Photo</Button>
           </Card>
-          {photos && filteredPhotos.map(photo => (
-            <Card key={photo.id}>
-              <Image
-                src={photo.url}
-              />
-              <div className='ui two buttons'>
-                <Button onClick={this.handleSetMainPhoto(photo)} basic color='green'>Main</Button>
-                <Button onClick={this.handlePhotoDelete(photo)} basic icon='trash' color='red' />
-              </div>
-            </Card>
-          ))}
-
+          {photos &&
+            filteredPhotos.map(photo => (
+              <Card key={photo.id}>
+                <Image src={photo.url} />
+                <div className="ui two buttons">
+                  <Button loading={loading} onClick={this.handleSetMainPhoto(photo)} basic color="green">
+                    Main
+                  </Button>
+                  <Button onClick={this.handlePhotoDelete(photo)} basic icon="trash" color="red" />
+                </div>
+              </Card>
+            ))}
         </Card.Group>
       </Segment>
     );

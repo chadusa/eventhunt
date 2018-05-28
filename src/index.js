@@ -6,6 +6,7 @@ import ReduxToastr from 'react-redux-toastr'
 import 'semantic-ui-css/semantic.min.css';
 import 'react-redux-toastr/lib/css/react-redux-toastr.min.css'
 import './index.css';
+import './App.css';
 import App from './app/layout/App';
 import registerServiceWorker from './registerServiceWorker';
 import { configureStore } from './app/store/configureStore';
